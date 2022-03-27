@@ -1,11 +1,8 @@
 from nacl.signing import SigningKey
+import argparse
 import hashlib
 import multiprocessing as mp
 import time
-
-
-# Modify this number to change the number of 0s at the beginning of the address
-TARGET_ZEROS = 5
 
 
 class Account:
@@ -23,7 +20,7 @@ class Account:
         """Returns the auth_key for the associated account"""
 
         hasher = hashlib.sha3_256()
-        hasher.update(self.signing_key.verify_key.encode() + b'\x00')
+        hasher.update(self.signing_key.verify_key.encode() + b"\x00")
         return hasher.hexdigest()
 
     def priv_key(self) -> str:
@@ -32,11 +29,11 @@ class Account:
         return self.signing_key._seed.hex()
 
 
-def gen_addresses() -> str:
+def gen_addresses(num_zeros: int) -> str:
     while True:
         temp = Account()
         address = temp.address()
-        if address[:TARGET_ZEROS] == "0" * TARGET_ZEROS:
+        if address[:num_zeros] == "0" * num_zeros:
             print(f"Address: {address}")
             print(f"Private key: {temp.priv_key()}")
             return temp.priv_key()
@@ -47,11 +44,22 @@ def callback(_):
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-z", "--zeros", help="Number of zeros to target", type=int, default=5
+    )
+    args = parser.parse_args()
+
     start_time = time.time()
     cpus = mp.cpu_count()
+    print(f"Mining vanity address with a {args.zeros} zero prefix...")
+    print(f"Using {cpus} CPUs...")
 
     pool = mp.Pool()
-    multiple_results = [pool.apply_async(gen_addresses, (), callback=callback) for _ in range(cpus)]
+    multiple_results = [
+        pool.apply_async(gen_addresses, (args.zeros,), callback=callback)
+        for _ in range(cpus)
+    ]
     pool.close()
     pool.join()
     print(f"Address found in {round(time.time()-start_time, 2)} seconds")

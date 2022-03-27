@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "aptos-vanity-generator"
+version = "0.1.0"
+description = "Generate Aptos vanity addresses in Python"
+authors = ["Mason Hall <masonhall@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+PyNaCl = "^1.5.0"
+
+[tool.poetry.dev-dependencies]
+black = "^22.1.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
